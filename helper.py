@@ -7,6 +7,7 @@ import loop_sdk_client as loop_api
 
 loop_api.Configuration().host = "https://clean-sprint-app.intheloop.io"
 BOT_MAIL = "cataniabot@gmail.com"
+BOT_ID = "user_543"
 USER1_MAIL = "johny.zeplin@gmail.com"
 # USER1_ID = "user_542"
 # LOOP_USER12_ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1X2lkIjoiMTE3IiwiYXRfaWQiOiIxMTdfNjk1MDAzNTYtZTM1Ni1lY2NhLTNiOWMtMTg0MTkzZGYwMjJjIiwibmJmIjoxNTMzMTE0NzA1LCJleHAiOjE1MzMxMTgzMDUsImlhdCI6MTUzMzExNDcwNX0.xijzgLrAvHuuOt29cvu-XSpKY7CWP6txdxDz-K0XAmI"
