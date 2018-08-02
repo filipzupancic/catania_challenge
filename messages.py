@@ -10,7 +10,7 @@ def edit_message(user_name, screen_name, project_link, chat_id, user_id):
         link = "Go to project: " + project_link
     else:
         link = ""
-    message = user_name + " made changes on screen #" + screen_name + "#.\n" + link
+    message = user_name + " made changes on screen #" + screen_name + "#.\n\n" + link
     helper.post(message, chat_id, None, user_id)
 
 
@@ -30,5 +30,5 @@ def create_message(user_name, screen_name, project_link, chat_id, user_id):
         link = "Go to project:\n" + project_link
     else:
         link = ""
-    message = user_name + " created new screen #" + screen_name + "#.\n" + link
+    message = user_name + " created new screen #" + screen_name + "#.\n\n" + link
     helper.post(message, chat_id, None, user_id)
