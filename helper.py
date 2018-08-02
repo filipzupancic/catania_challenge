@@ -5,7 +5,9 @@
 import loop_sdk_client as loop_api
 # from loop_sdk_client.rest import ApiException
 
-loop_api.Configuration().host = "https://clean-sprint-app.intheloop.io"
+loop_api_host = "https://clean-sprint-app.intheloop.io"
+
+loop_api.Configuration().host = loop_api_host
 BOT_MAIL = "cataniabot@gmail.com"
 BOT_ID = "user_543"
 USER1_MAIL = "johny.zeplin@gmail.com"
@@ -102,12 +104,26 @@ def get_comment_lis_chat(comment_id_list, x_impersonate_user=None):
     return api.comment_get_list(comment_ids=comment_id_list, x_impersonate_user=x_impersonate_user, authorization=get_auth(),
                            html_format='text/html-stripped')
 
-
 def get_user_by_email(email):
     user_api = loop_api.UserApi()
     user = loop_api.User(type='User', email=email)
     user_object = user_api.user_create_contact(user, authorization=get_auth())
     return user_object
+
+
+def get_comments_from_chat_card(chat_card_id, offset_comments, size_comments, x_impersonate_user=BOT_ID):
+    card_api = loop_api.CardApi()
+    card = card_api.card_get(chat_card_id, offset_comments=offset_comments, size_comments=size_comments,
+                             authorization=get_auth(), x_impersonate_user=x_impersonate_user)
+    return card.comments.resources
+
+
+def get_card_chat_id_list_by_user_id(offset, size, user_id=BOT_ID):
+    # vrne samo CardChat idje
+    card_api = loop_api.CardApi()
+    card_list = card_api.card_get_list(offset, size, card_types=['CardChat'], authorization=get_auth(), x_impersonate_user=user_id)
+    card_id_list = [card_list.resources[index].id for index in range(len(card_list.resources))]
+    return card_id_list
 
 token = None
 def get_auth():
