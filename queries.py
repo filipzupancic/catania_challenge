@@ -55,3 +55,15 @@ def get_comments(pk):
     }
     """
     return query_string.replace('\n', '')
+
+def project_last_modified(pk):
+    query_string = """
+        { "query" : "
+            query {
+              project(pk: """ + pk + """) {
+                modifiedAt
+              }
+            }
+        "}
+        """
+    return query_string.replace('\n', '')
