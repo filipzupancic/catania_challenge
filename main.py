@@ -1,5 +1,17 @@
 import helper
 import messages
+import requests
+import queries
+
+MARVEL_TOKEN = "bUfITrzmkkWMiCSgKy0NWMsu9E0imV"
+MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
+
+resp = requests.post(MARVEL_API_URL, data=queries.get_comments("3246216"), headers={"Authorization":"Bearer " + MARVEL_TOKEN})
+print(resp.json()['data']['project']['screens']['edges'][0]['node']['comments']['edges'][0]['node']['author']['username']
+      + '  commented  "'
+      + resp.json()['data']['project']['screens']['edges'][0]['node']['comments']['edges'][0]['node']['message']
+      + '"')
+
 
 print("test")
 user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
