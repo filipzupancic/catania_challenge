@@ -79,7 +79,7 @@ def screens_last_modified(pk):
                           displayName
                           modifiedAt
                           uuid
-                          }
+                          uploadUrl
                         }
                       }
                     }
