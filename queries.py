@@ -55,3 +55,66 @@ def get_comments(pk):
     }
     """
     return query_string.replace('\n', '')
+
+def project_last_modified(pk):
+    query_string = """
+        { "query" : "
+            query {
+              project(pk: """ + pk + """) {
+                modifiedAt
+              }
+            }
+        "}
+        """
+    return query_string.replace('\n', '')
+
+def screens_last_modified(pk):
+    query_string = """
+            { "query" : "
+                query {
+                  project(pk: """ + pk + """) {
+                    screens {
+                      edges {
+                        node {
+                          displayName
+                          modifiedAt
+                          uuid
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+            "}
+            """
+    return query_string.replace('\n', '')
+
+def get_comments_after(pk, cursor):
+    query_string = """
+                { "query" : "
+                    query {
+                      project(pk: """ + pk + """) {
+                        screens {
+                          edges {
+                            node {
+                              displayName
+                              comments(after: \"""" + cursor + """\" last:10) {
+                                edges {
+                                  cursor
+                                  node {
+                                    createdAt
+                                    message
+                                    author {
+                                      username
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                "}
+                """
+    return query_string.replace('\n', '')
