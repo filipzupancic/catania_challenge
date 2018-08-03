@@ -36,7 +36,7 @@ def query_string__screens_last_modified(pk):
             """
     return query_string.replace('\n', '')
 
-def query_string__get_comments_after_cursor(project_id, comment_cursor):
+def query_string__get_comments_after_cursor(project_id, comment_cursor, last):
     query_string = """
                 { "query" : "
                     query {
@@ -44,12 +44,12 @@ def query_string__get_comments_after_cursor(project_id, comment_cursor):
                         screens {
                           edges {
                             node {
+                              pk
                               displayName
-                              comments(after: \"""" + comment_cursor + """\" last:10) {
+                              comments(after: \\\"""" + comment_cursor + """\\\" last:""" +str(last)+ """) {
                                 edges {
                                   cursor
                                   node {
-                                    createdAt
                                     message
                                     author {
                                       username
@@ -64,6 +64,24 @@ def query_string__get_comments_after_cursor(project_id, comment_cursor):
                     }
                 "}
                 """
+    return query_string.replace('\n', '')
+
+def query_string__get_screens(pk):
+    query_string = """
+        { "query" : "
+            query {
+              project(pk: """ + pk + """) {
+                screens {
+                  edges {
+                    node {
+                      pk
+                    }
+                  }
+                }
+              }
+            }
+        "}
+        """
     return query_string.replace('\n', '')
 # QUERY STRINGS end
 
@@ -107,14 +125,16 @@ def check_if_screen_modified(marvel_api_url, marvel_token, project_id, old_modif
         modified_screen = Screen(last_modified_screen, project_id)
 
     return modified_screen
-
-
 # DEMO CODE
 '''
 import queries
 import time
 import messages
 import helper
+
+MARVEL_TOKEN = "bUfITrzmkkWMiCSgKy0NWMsu9E0imV"
+MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
+project_id = "3246216"
 
 user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
 chat = helper.get_chat(helper.USER1_MAIL, user_id)
@@ -135,7 +155,64 @@ while True:
     time.sleep(1)
 '''
 
-def check_if_new_comments(marvel_api_url, marvel_token, project_id, screen_pk, comment_cursor):
-    resp = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(project_id, comment_cursor),
-                         headers={"Authorization": "Bearer " + marvel_token})
-    #TODO
+comment_cursors = {}
+def check_for_new_comments(marvel_api_url, marvel_token, project_id):
+    new_comments = None
+
+    resp0 = requests.post(marvel_api_url, data=query_string__get_screens(project_id),
+                          headers={"Authorization": "Bearer " + marvel_token})
+
+    screen_edges = resp0.json()['data']['project']['screens']['edges']
+    for screen_edge in screen_edges:
+        screen_pk = str(screen_edge['node']['pk'])
+
+        if screen_pk in comment_cursors.keys():
+            # get comments after cursor
+            resp = requests.post(marvel_api_url,
+                                  data=query_string__get_comments_after_cursor(project_id, comment_cursors[screen_pk], 50),
+                                  headers={"Authorization": "Bearer " + marvel_token})
+        else:
+            # set comment_cursors[screen_pk] to the last cursor (initialize cursor for this screen)
+            resp = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(project_id, "", 1),
+                                 headers={"Authorization": "Bearer " + marvel_token})
+
+        for screen_edge in resp.json()['data']['project']['screens']['edges']:
+            screen = screen_edge['node']
+            if str(screen['pk']) == screen_pk:
+                if len(screen['comments']['edges']) > 0:
+                    if screen_pk in comment_cursors.keys():
+                        # if comment_cursors for this screen already exists, then we have new comments
+                        # do sth with the new comments:
+                        new_comments = screen['comments']['edges']
+                    comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
+                break
+
+    return new_comments
+# DEMO CODE
+'''
+import queries
+import time
+import messages
+import helper
+
+MARVEL_TOKEN = "bUfITrzmkkWMiCSgKy0NWMsu9E0imV"
+MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
+project_id = "3246216"
+
+user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
+chat = helper.get_chat(helper.USER1_MAIL, user_id)
+
+last_modified_screen = queries.get_last_modified_screen(MARVEL_API_URL, MARVEL_TOKEN, project_id)
+old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
+
+while True:
+    new_comments = queries.check_for_new_comments(MARVEL_API_URL, MARVEL_TOKEN, project_id)
+
+    if new_comments is not None:
+        for i in new_comments:
+            new_comment = i['node']
+            print(new_comment['author']['username'] + "  commented :" + new_comment['message'])
+            messages.comment_message(new_comment['author']['username'], "[no_screen_name_yet]", "[no_screen_url]", new_comment['message'], chat.id, user_id)
+
+    time.sleep(1)
+'''
