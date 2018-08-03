@@ -16,42 +16,8 @@ chat = helper.get_chat(helper.USER1_MAIL, user_id)
 
 # scheduler = BackgroundScheduler()
 # scheduler.start()
-
-
-def chandler_ping():
-    resp = requests.post(MARVEL_API_URL, data=queries.screens_last_modified(project_id),
-                         headers={"Authorization": "Bearer " + MARVEL_TOKEN})
-    screens = resp.json()['data']['project']['screens']['edges']
-    new_modifiedAt = 0
-    for i in screens:
-        screen_modified_time = time.mktime(time.strptime(i['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
-        if screen_modified_time > new_modifiedAt:
-            new_modifiedAt = screen_modified_time
-            last_modified_screen = i
-
-    return last_modified_screen
-
-
-
-last_modified_screen = chandler_ping()
-old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
-
-while True:
-    last_modified_screen = chandler_ping()
-    new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
-
-    if new_modifiedAt != old_modifiedAt:
-        screen_id = re.findall(r"\d+", last_modified_screen['node']['uploadUrl'])[0]
-        screen_url = "https://marvelapp.com/project/"+project_id+"/screen/"+screen_id+"/"
-        print(last_modified_screen['node']['displayName'] + " was modified - time:" + last_modified_screen['node']['modifiedAt'])
-
-        messages.edit_message("Somebody", last_modified_screen['node']['displayName'], screen_url, chat.id, user_id)
-        old_modifiedAt = new_modifiedAt
-    else:
-        time.sleep(1)
-
+# ...
 # scheduler.add_job(some_job(), 'interval', minutes=1)
-
 # scheduler.shutdown()
 
 # user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
@@ -107,7 +73,3 @@ for c_id in card_id_list:
         # comment.comment je string
         if comment.comment is not None and BOT_WORD in comment.comment:
             print("sporocilo za bota")
-
-
-
-
