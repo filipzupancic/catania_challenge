@@ -3,8 +3,7 @@ import time
 import re
 
 # QUERY STRINGS start
-
-def project_last_modified(pk):
+def query_string__project_last_modified(pk):
     query_string = """
         { "query" : "
             query {
@@ -16,7 +15,7 @@ def project_last_modified(pk):
         """
     return query_string.replace('\n', '')
 
-def screens_last_modified(pk):
+def query_string__screens_last_modified(pk):
     query_string = """
             { "query" : "
                 query {
@@ -24,6 +23,7 @@ def screens_last_modified(pk):
                     screens {
                       edges {
                         node {
+                          pk
                           displayName
                           modifiedAt
                           uploadUrl
@@ -36,16 +36,16 @@ def screens_last_modified(pk):
             """
     return query_string.replace('\n', '')
 
-def get_comments_after(pk, cursor):
+def query_string__get_comments_after_cursor(project_id, comment_cursor):
     query_string = """
                 { "query" : "
                     query {
-                      project(pk: """ + pk + """) {
+                      project(pk: """ + project_id + """) {
                         screens {
                           edges {
                             node {
                               displayName
-                              comments(after: \"""" + cursor + """\" last:10) {
+                              comments(after: \"""" + comment_cursor + """\" last:10) {
                                 edges {
                                   cursor
                                   node {
@@ -71,6 +71,7 @@ def get_comments_after(pk, cursor):
 # CLASSES start
 class Screen:
   def __init__(self, screen_marvel_object, project_id):
+    self.pk = screen_marvel_object['node']['pk']
     self.modifiedAt_time  = time.mktime(time.strptime(screen_marvel_object['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
     self.modifiedAt  = screen_marvel_object['node']['modifiedAt']
     self.screen_id = re.findall(r"\d+", screen_marvel_object['node']['uploadUrl'])[0]
@@ -80,7 +81,7 @@ class Screen:
 
 
 def get_last_modified_screen(marvel_api_url, marvel_token, project_id):
-    resp = requests.post(marvel_api_url, data=screens_last_modified(project_id),
+    resp = requests.post(marvel_api_url, data=query_string__screens_last_modified(project_id),
                          headers={"Authorization": "Bearer " + marvel_token})
     screens = resp.json()['data']['project']['screens']['edges']
     new_modifiedAt = 0
@@ -133,3 +134,8 @@ while True:
 
     time.sleep(1)
 '''
+
+def check_if_new_comments(marvel_api_url, marvel_token, project_id, screen_pk, comment_cursor):
+    resp = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(project_id, comment_cursor),
+                         headers={"Authorization": "Bearer " + marvel_token})
+    #TODO
