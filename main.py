@@ -21,16 +21,16 @@ def chandler_ping():
     return resp.json()["data"]["project"]["modifiedAt"]
 
 
-old_modifiedAt = chandler_ping()
-while True:
-    new_modifiedAt = chandler_ping()
-    print ("new_modifiedAt: " + new_modifiedAt)
-    print ("old_modifiedAt: " + old_modifiedAt)
-
-    if new_modifiedAt != old_modifiedAt:
-        messages.edit_message("Špela", "Bombing for peace", "https://www.intheloop.io/", chat.id, user_id)
-    old_modifiedAt = new_modifiedAt
-    time.sleep(1)
+# old_modifiedAt = chandler_ping()
+# while True:
+#     new_modifiedAt = chandler_ping()
+#     print ("new_modifiedAt: " + new_modifiedAt)
+#     print ("old_modifiedAt: " + old_modifiedAt)
+#
+#     if new_modifiedAt != old_modifiedAt:
+#         messages.edit_message("Špela", "Bombing for peace", "https://www.intheloop.io/", chat.id, user_id)
+#     old_modifiedAt = new_modifiedAt
+#     time.sleep(1)
 
 # scheduler.add_job(some_job(), 'interval', minutes=1)
 
