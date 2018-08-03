@@ -53,16 +53,17 @@ while len(card_id_list) == card_list_offset + card_list_limit:
     card_list_offset += card_list_limit
     card_id_list += helper.get_card_chat_id_list_by_user_id(card_list_offset, card_list_limit, helper.BOT_ID)
 
-for c_id in card_properties_dictionary:
+for key in card_properties_dictionary:
     # checks if card_properties_dictionary has any cards
     # that no longer exist and deletes them
-    pass
+    if key not in card_id_list:
+        del card_properties_dictionary[key]
 
 for c_id in card_id_list:
     # checks if card_id is in card_properties_dictionary
     # if not we add value to dictionary
     if c_id not in card_properties_dictionary:
-        card_properties_dictionary.update({c_id: Card(None, None, None)})
+        card_properties_dictionary.update({c_id: Card(MARVEL_TOKEN, project_id, None)})
 
     offset = 0
     size = 10
@@ -78,3 +79,9 @@ for c_id in card_id_list:
         # comment.comment je string
         if comment.comment is not None and BOT_WORD in comment.comment:
             print("sporocilo za bota")
+
+    # checks all records in card_properties_dictionary and send query if
+    # has_required_data returns True value
+    for key in card_properties_dictionary:
+        if card_properties_dictionary[key].has_required_data():
+            pass
