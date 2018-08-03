@@ -97,6 +97,8 @@ for c_id in card_id_list:
 
 print(card_properties_dictionary)
 
-
-
-
+# checks all records in card_properties_dictionary and send query if
+# has_required_data returns True value
+for key in card_properties_dictionary:
+    if card_properties_dictionary[key].has_required_data():
+        pass
