@@ -46,6 +46,7 @@ def query_string__get_comments_after_cursor(project_id, comment_cursor, last):
                             node {
                               pk
                               displayName
+                              uploadUrl
                               comments(after: \\\"""" + comment_cursor + """\\\" last:""" +str(last)+ """) {
                                 edges {
                                   cursor
@@ -92,11 +93,12 @@ class Screen:
     self.pk = screen_marvel_object['node']['pk']
     self.modifiedAt_time  = time.mktime(time.strptime(screen_marvel_object['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
     self.modifiedAt  = screen_marvel_object['node']['modifiedAt']
-    self.screen_id = re.findall(r"\d+", screen_marvel_object['node']['uploadUrl'])[0]
-    self.screen_url = "https://marvelapp.com/project/" + project_id + "/screen/" + self.screen_id + "/"
+    self.screen_url = get_screen_url(project_id, screen_marvel_object['node']['uploadUrl'])
     self.displayName = screen_marvel_object['node']['displayName']
 # CLASSES end
 
+def get_screen_url(project_id, screen_upload_url):
+    return "https://marvelapp.com/project/" + project_id + "/screen/" + re.findall(r"\d+", screen_upload_url)[0] + "/"
 
 def get_last_modified_screen(marvel_api_url, marvel_token, project_id):
     resp = requests.post(marvel_api_url, data=query_string__screens_last_modified(project_id),
@@ -158,6 +160,8 @@ while True:
 comment_cursors = {}
 def check_for_new_comments(marvel_api_url, marvel_token, project_id):
     new_comments = None
+    screen_name = None
+    screen_url = None
 
     resp0 = requests.post(marvel_api_url, data=query_string__get_screens(project_id),
                           headers={"Authorization": "Bearer " + marvel_token})
@@ -184,10 +188,12 @@ def check_for_new_comments(marvel_api_url, marvel_token, project_id):
                         # if comment_cursors for this screen already exists, then we have new comments
                         # do sth with the new comments:
                         new_comments = screen['comments']['edges']
+                        screen_name = screen['displayName']
+                        screen_url = get_screen_url(project_id, screen['uploadUrl'])+"comments/"
                     comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
                 break
 
-    return new_comments
+    return (new_comments, screen_name, screen_url)
 # DEMO CODE
 '''
 import queries
@@ -206,13 +212,14 @@ last_modified_screen = queries.get_last_modified_screen(MARVEL_API_URL, MARVEL_T
 old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
 
 while True:
-    new_comments = queries.check_for_new_comments(MARVEL_API_URL, MARVEL_TOKEN, project_id)
+    new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, MARVEL_TOKEN, project_id)
 
     if new_comments is not None:
         for i in new_comments:
             new_comment = i['node']
             print(new_comment['author']['username'] + "  commented :" + new_comment['message'])
-            messages.comment_message(new_comment['author']['username'], "[no_screen_name_yet]", "[no_screen_url]", new_comment['message'], chat.id, user_id)
+            messages.comment_message(new_comment['author']['username'], screen_name,
+                                     screen_url, new_comment['message'], chat.id, user_id)
 
     time.sleep(1)
 '''
