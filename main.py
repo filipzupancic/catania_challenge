@@ -35,6 +35,7 @@ while True:
         # if not we add value to dictionary
         if c_id not in card_properties_dictionary:
             card_properties_dictionary.update({c_id: Card(None, None, 0)})
+            messages.bot_initial_message(c_id, helper.BOT_ID)
 
         curr_card = card_properties_dictionary[c_id]
 

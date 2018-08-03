@@ -32,3 +32,10 @@ def create_message(user_name, screen_name, project_link, card_id, user_id):
         link = ""
     message = user_name + " created new screen #" + screen_name + "#.\n\n" + link
     helper.post(message, card_id, None, user_id)
+
+
+# sends list of bor actions
+def bot_initial_message(card_id, user_id):
+    message = "I accept messages that start with /marvin.\n" \
+              "For project number type projectPK [project number] and for marvel token type marvelToken [marvel token]."
+    helper.post(message, card_id, None, user_id)
