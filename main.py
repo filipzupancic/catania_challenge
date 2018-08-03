@@ -2,7 +2,7 @@ import helper
 from card import Card
 import messages
 import requests
-import queries
+#import queries
 import time
 import re
 
@@ -47,7 +47,7 @@ BOT_WORD = '/marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
 # tkole bot dobi pogovore, v katerih je vkljucen
-# ce je list v celotu napolnjen, potem ponovi za naslednjih 50, drugace si prisel cez vse
+# ce je list v celotu napolnjen, potem ponovi za naslednjih 50, drugace si prisel cez
 card_list_offset = 0
 card_list_limit = 10
 card_id_list = helper.get_card_chat_id_list_by_user_id(card_list_offset, card_list_limit, helper.BOT_ID)
@@ -64,38 +64,38 @@ for c_id in card_id_list:
     # checks if card_id is in card_properties_dictionary
     # if not we add value to dictionary
     if c_id not in card_properties_dictionary:
-        card_properties_dictionary.update({c_id: Card(None, None, None)})
+        card_properties_dictionary.update({c_id: Card(None, None, 0)})
 
-    offset = 0
+    curr_card = card_properties_dictionary[c_id]
+
+    if curr_card.offset_comment is not None:
+        offset = curr_card.offset_comment
+    else:
+        offset = 0
+
     size = 10
+
     comment_list = helper.get_comments_from_chat_card(c_id, offset, size)
     while len(comment_list) == offset + size:
         offset += size
         comment_list += helper.get_comments_from_chat_card(c_id, offset, size)
 
-    # tuki mam vsa sporocila za chat z idjem c_id
+    curr_card.change_offset_comment(curr_card.offset_comment + len(comment_list))
+
     for comment in comment_list:
-        if comment.comment is not None and BOT_WORD in comment.comment: # TODO AND has_req == false
+        if comment.comment is not None and BOT_WORD in comment.comment:
             print("sporocilo za bota")
 
-            # check for project PK
             project_pk_list = re.findall(r"" + PROJECT_PK_WORD + "\s+\w+", comment.comment)
-            if len(project_pk_list) >= 1:
+            if len(project_pk_list) == 1:
                 project_pk = project_pk_list[0].split()[1]
-                # TODO update field in object
-            else: #TODO remove
-                project_pk = None
-            # check for marvel token
+                curr_card.change_project_pk(project_pk)
             marvel_token_list = re.findall(r"" + MARVEL_TOKEN_WORD + "\s+\w+", comment.comment)
-            if len(marvel_token_list) >= 1:
+            if len(marvel_token_list) == 1:
                 marvel_token = marvel_token_list[0].split()[1]
-                # TODO update field in object
-            else: #TODO remove
-                marvel_token = None
+                curr_card.change_marvel_token(marvel_token)
 
-            print("Dobljene vrednosti:")
-            print(project_pk)
-            print(marvel_token)
+print(card_properties_dictionary)
 
 
 
