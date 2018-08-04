@@ -5,6 +5,8 @@ import queries
 import re
 
 MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
+COMMENT_SIZE_FETCHING = 100
+CARD_SIZE_FETCHING = 100
 
 # array contains objects with chat card properties
 card_properties_dictionary = {}
@@ -15,11 +17,10 @@ card_properties_dictionary = {}
 while True:
     print("----------------  iteration start  ----------------")
     card_list_offset = 0
-    card_list_limit = 10
-    card_id_list = helper.get_card_chat_id_list_by_user_id(card_list_offset, card_list_limit, helper.BOT_ID)
-    while len(card_id_list) == card_list_offset + card_list_limit:
-        card_list_offset += card_list_limit
-        card_id_list += helper.get_card_chat_id_list_by_user_id(card_list_offset, card_list_limit, helper.BOT_ID)
+    card_id_list = helper.get_card_chat_id_list_by_user_id(card_list_offset, CARD_SIZE_FETCHING, helper.BOT_ID)
+    while len(card_id_list) == card_list_offset + CARD_SIZE_FETCHING:
+        card_list_offset += CARD_SIZE_FETCHING
+        card_id_list += helper.get_card_chat_id_list_by_user_id(card_list_offset, CARD_SIZE_FETCHING, helper.BOT_ID)
 
     for key in card_properties_dictionary:
         # checks if card_properties_dictionary has any cards
@@ -28,11 +29,21 @@ while True:
             del card_properties_dictionary[key]
 
     for c_id in card_id_list:
+
         # checks if card_id is in card_properties_dictionary
         # if not we add value to dictionary
         if c_id not in card_properties_dictionary:
             card_properties_dictionary.update({c_id: Card(None, None, 0)})
             messages.bot_initial_message(c_id, helper.BOT_ID)
+            # check comments size in chat and set offset because we do not want to check messages that were send before
+            # bot was added to chat
+            offset = 0
+            comment_list = helper.get_comments_from_chat_card(c_id, offset, COMMENT_SIZE_FETCHING)
+            while len(comment_list) == offset + COMMENT_SIZE_FETCHING:
+                offset += COMMENT_SIZE_FETCHING
+                comment_list += helper.get_comments_from_chat_card(c_id, offset, COMMENT_SIZE_FETCHING)
+
+                card_properties_dictionary[c_id].change_offset_comment(card_properties_dictionary[c_id].offset_comment + len(comment_list))
 
         curr_card = card_properties_dictionary[c_id]
 
@@ -41,11 +52,10 @@ while True:
         else:
             offset = 0
 
-        size = 10
-        comment_list = helper.get_comments_from_chat_card(c_id, offset, size)
-        while len(comment_list) == offset + size:
-            offset += size
-            comment_list += helper.get_comments_from_chat_card(c_id, offset, size)
+        comment_list = helper.get_comments_from_chat_card(c_id, offset, COMMENT_SIZE_FETCHING)
+        while len(comment_list) == offset + COMMENT_SIZE_FETCHING:
+            offset += COMMENT_SIZE_FETCHING
+            comment_list += helper.get_comments_from_chat_card(c_id, offset, COMMENT_SIZE_FETCHING)
 
         curr_card.change_offset_comment(curr_card.offset_comment + len(comment_list))
 
