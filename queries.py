@@ -97,6 +97,14 @@ class Screen:
     self.displayName = screen_marvel_object['node']['displayName']
 # CLASSES end
 
+# VALIDATING USER DATA
+def check_user_data(marvel_api_url, marvel_token, project_id):
+    resp = requests.post(marvel_api_url, data=query_string__project_last_modified(project_id),
+                         headers={"Authorization": "Bearer " + marvel_token})
+    return resp.status_code == 200
+    #todo  preveri se za project_id (ker koda je 200 tudi ce je project_id napacen)
+
+
 def get_screen_url(project_id, screen_upload_url):
     return "https://marvelapp.com/project/" + project_id + "/screen/" + re.findall(r"\d+", screen_upload_url)[0] + "/"
 
@@ -119,15 +127,22 @@ def get_last_modified_screen(marvel_api_url, marvel_token, project_id):
 #  - None if no screen is changed, or
 #  - last modified screen as 'Screen' object if a screen was modified after the 'old_modifiedAt'
 def check_if_screen_modified(marvel_api_url, marvel_token, project_id, old_modifiedAt):
+    if old_modifiedAt is None:
+        # initialize old_modifiedAt
+        last_modified_screen = get_last_modified_screen(marvel_api_url, marvel_token, project_id)
+        old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
+        return None
+
     last_modified_screen = get_last_modified_screen(marvel_api_url, marvel_token, project_id)
     new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
     modified_screen = None
 
     if new_modifiedAt != old_modifiedAt:
         modified_screen = Screen(last_modified_screen, project_id)
+        old_modifiedAt = modified_screen.modifiedAt_time
 
     return modified_screen
-# DEMO CODE
+# DEMO CODE - not working
 '''
 import queries
 import time
@@ -141,32 +156,31 @@ project_id = "3246216"
 user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
 chat = helper.get_chat(helper.USER1_MAIL, user_id)
 
-last_modified_screen = queries.get_last_modified_screen(MARVEL_API_URL, MARVEL_TOKEN, project_id)
-old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
-
 while True:
-    modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, MARVEL_TOKEN, project_id, old_modifiedAt)
+    modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, MARVEL_TOKEN, project_id)
 
     if modified_screen is not None:
-
         print(modified_screen.displayName + " was modified - time:" + modified_screen.modifiedAt)
         messages.edit_message("Somebody", modified_screen.displayName, modified_screen.screen_url, chat.id, user_id)
-
-        old_modifiedAt = modified_screen.modifiedAt_time
 
     time.sleep(1)
 '''
 
-comment_cursors = {}
-def check_for_new_comments(marvel_api_url, marvel_token, project_id):
+# this function returns
+#  - None if there is no new comments, or
+#  - a tuple of (new_comments, screen_name, screen_url)
+#       new_comments = array of 'CommentEdge'
+#       screen_name = string - display name of the screen
+#       screen_url = string - url to comment section of the screen
+def check_for_new_comments(marvel_api_url, marvel_token, project_id, comment_cursors):
     new_comments = None
     screen_name = None
     screen_url = None
 
     resp0 = requests.post(marvel_api_url, data=query_string__get_screens(project_id),
                           headers={"Authorization": "Bearer " + marvel_token})
-
     screen_edges = resp0.json()['data']['project']['screens']['edges']
+
     for screen_edge in screen_edges:
         screen_pk = str(screen_edge['node']['pk'])
 
@@ -194,7 +208,7 @@ def check_for_new_comments(marvel_api_url, marvel_token, project_id):
                 break
 
     return (new_comments, screen_name, screen_url)
-# DEMO CODE
+# DEMO CODE - not working
 '''
 import queries
 import time
@@ -223,3 +237,10 @@ while True:
 
     time.sleep(1)
 '''
+
+
+def check_for_new_screens():
+    new_screens = None
+
+    return new_screens
+    #todo
