@@ -70,19 +70,13 @@ while True:
     for card_id in card_properties_dictionary:
         if card_properties_dictionary[card_id].has_required_data():
             # in case of required data check if changes were made on marvel project
-            modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
-                                                               card_properties_dictionary[card_id].project_pk,
-                                                               card_properties_dictionary[card_id].old_modifiedAt)
+            modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, card_properties_dictionary[card_id])
 
             if modified_screen is not None:
                 messages.edit_message(modified_screen.displayName, modified_screen.screen_url, card_id, helper.BOT_ID)
 
-                old_modifiedAt = modified_screen.modifiedAt_time
-
             # CHECK FOR COMMENTS UPDATE
-            new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
-                                                                                   card_properties_dictionary[card_id].project_pk,
-                                                                                   card_properties_dictionary[card_id].comment_cursors)
+            new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, card_properties_dictionary[card_id])
 
             if new_comments is not None:
                 for i in new_comments:
