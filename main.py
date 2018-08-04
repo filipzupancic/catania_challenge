@@ -1,9 +1,7 @@
 import helper
 from card import Card
 import messages
-import requests
 import queries
-import time
 import re
 
 MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
@@ -15,6 +13,7 @@ card_properties_dictionary = {}
 # tkole bot dobi pogovore, v katerih je vkljucen
 # ce je list v celotu napolnjen, potem ponovi za naslednjih 50, drugace si prisel cez
 while True:
+    print("----------------  iteration start  ----------------")
     card_list_offset = 0
     card_list_limit = 10
     card_id_list = helper.get_card_chat_id_list_by_user_id(card_list_offset, card_list_limit, helper.BOT_ID)
@@ -51,8 +50,8 @@ while True:
         curr_card.change_offset_comment(curr_card.offset_comment + len(comment_list))
 
         for comment in comment_list:
-            if comment.comment is not None and messages.BOT_WORD in comment.comment:
-                print("sporocilo za bota")
+            if comment.comment is not None and comment.comment.startswith(messages.BOT_WORD):
+                print("sporocilo za bota: " + comment.comment)
 
                 project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\w+", comment.comment)
                 if len(project_pk_list) == 1:
@@ -63,7 +62,7 @@ while True:
                     marvel_token = marvel_token_list[0].split()[1]
                     curr_card.change_marvel_token(marvel_token)
 
-    print(card_properties_dictionary)
+    #print(card_properties_dictionary)
 
     # checks all records in card_properties_dictionary and send query if
     # has_required_data returns True value
@@ -73,6 +72,7 @@ while True:
             modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, card_properties_dictionary[card_id])
 
             if modified_screen is not None:
+                print("Changes made on screen " + modified_screen.displayName)
                 messages.edit_message(modified_screen.displayName, modified_screen.screen_url, card_id, helper.BOT_ID)
 
             # CHECK FOR COMMENTS UPDATE
@@ -81,8 +81,6 @@ while True:
             if new_comments is not None:
                 for i in new_comments:
                     new_comment = i['node']
-                    print(new_comment['author']['username'] + "  commented :" + new_comment['message'])
+                    print(new_comment['author']['username'] + "  commented: " + new_comment['message'])
                     messages.comment_message(new_comment['author']['username'], screen_name,
                                              screen_url, new_comment['message'], card_id, helper.BOT_ID)
-
-
