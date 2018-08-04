@@ -5,12 +5,12 @@ import helper
 # and we want to notify a user
 
 # sends a notification about edit on project
-def edit_message(user_name, screen_name, project_link, card_id, user_id):
+def edit_message(screen_name, project_link, card_id, user_id):
     if project_link is not None:
         link = "Go to project: " + project_link
     else:
         link = ""
-    message = user_name + " made changes on screen #" + screen_name + "#.\n\n" + link
+    message = "Changes made on screen #" + screen_name + "#.\n\n" + link
     helper.post(message, card_id, None, user_id)
 
 
@@ -25,12 +25,12 @@ def comment_message(user_name, screen_name, project_link, comment, card_id, user
 
 
 # sends a notification that new screen was created inside the project
-def create_message(user_name, screen_name, project_link, card_id, user_id):
+def create_message(screen_name, project_link, card_id, user_id):
     if project_link is not None:
         link = "Go to project:\n" + project_link
     else:
         link = ""
-    message = user_name + " created new screen #" + screen_name + "#.\n\n" + link
+    message = "New screen #" + screen_name + "# was created.\n\n" + link
     helper.post(message, card_id, None, user_id)
 
 
