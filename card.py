@@ -16,6 +16,9 @@ class Card:
     def change_offset_comment(self, offset_comment):
         self.offset_comment = offset_comment
 
+    def change_old_modifiedAt(self, old_modifiedAt):
+        self.old_modifiedAt = old_modifiedAt
+
     def has_required_data(self):
         if self.marvel_token is not None and self.project_pk is not None:
             return True
