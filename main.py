@@ -77,7 +77,7 @@ while True:
             if modified_screen is not None:
                 messages.edit_message(modified_screen.displayName, modified_screen.screen_url, card_id, helper.BOT_ID)
 
-                old_modifiedAt = modified_screen.modifiedAt_time
+                card_properties_dictionary[card_id].old_modifiedAt = modified_screen.modifiedAt_time
 
             # CHECK FOR COMMENTS UPDATE
             new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
