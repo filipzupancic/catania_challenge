@@ -2,11 +2,11 @@ import helper
 from card import Card
 import messages
 import requests
-#import queries
+import queries
 import time
 import re
 
-# MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
+MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
 
 # array contains objects with chat card properties
 card_properties_dictionary = {}
@@ -14,6 +14,8 @@ card_properties_dictionary = {}
 BOT_WORD = '/marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
+
+old_modifiedAt = None  # globalna spremenljivka za cekiranje na marvel strani
 # tkole bot dobi pogovore, v katerih je vkljucen
 # ce je list v celotu napolnjen, potem ponovi za naslednjih 50, drugace si prisel cez
 while True:
@@ -71,4 +73,24 @@ while True:
     # has_required_data returns True value
     for card_id in card_properties_dictionary:
         if card_properties_dictionary[card_id].has_required_data():
-            messages.edit_message("Špela", "Uspesno vpisani vsi podatki", "https://www.intheloop.io/", card_id, helper.BOT_ID)
+            # in case of required data check if changes were made on marvel project
+            modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
+                                                               card_properties_dictionary[card_id].project_pk, old_modifiedAt)
+
+            if modified_screen is not None:
+                messages.edit_message(modified_screen.displayName, modified_screen.screen_url, card_id, helper.BOT_ID)
+
+                old_modifiedAt = modified_screen.modifiedAt_time
+
+            # CHECK FOR COMMENTS UPDATE
+            new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
+                                                                                   card_properties_dictionary[card_id].project_pk)
+
+            if new_comments is not None:
+                for i in new_comments:
+                    new_comment = i['node']
+                    print(new_comment['author']['username'] + "  commented :" + new_comment['message'])
+                    messages.comment_message(new_comment['author']['username'], screen_name,
+                                             screen_url, new_comment['message'], card_id, helper.BOT_ID)
+
+
