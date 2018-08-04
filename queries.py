@@ -126,20 +126,20 @@ def get_last_modified_screen(marvel_api_url, marvel_token, project_id):
 # this function returns
 #  - None if no screen is changed, or
 #  - last modified screen as 'Screen' object if a screen was modified after the 'old_modifiedAt'
-def check_if_screen_modified(marvel_api_url, marvel_token, project_id, old_modifiedAt):
-    if old_modifiedAt is None:
+def check_if_screen_modified(marvel_api_url, card):
+    if card.old_modifiedAt is None:
         # initialize old_modifiedAt
-        last_modified_screen = get_last_modified_screen(marvel_api_url, marvel_token, project_id)
-        old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
+        last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_id)
+        card.change_old_modifiedAt(time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00")))
         return None
 
-    last_modified_screen = get_last_modified_screen(marvel_api_url, marvel_token, project_id)
+    last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_id)
     new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
     modified_screen = None
 
-    if new_modifiedAt != old_modifiedAt:
-        modified_screen = Screen(last_modified_screen, project_id)
-        old_modifiedAt = modified_screen.modifiedAt_time
+    if new_modifiedAt != card.old_modifiedAt:
+        modified_screen = Screen(last_modified_screen, card.project_id)
+        card.change_old_modifiedAt(modified_screen.modifiedAt_time)
 
     return modified_screen
 # DEMO CODE - not working
@@ -172,39 +172,39 @@ while True:
 #       new_comments = array of 'CommentEdge'
 #       screen_name = string - display name of the screen
 #       screen_url = string - url to comment section of the screen
-def check_for_new_comments(marvel_api_url, marvel_token, project_id, comment_cursors):
+def check_for_new_comments(marvel_api_url, card):
     new_comments = None
     screen_name = None
     screen_url = None
 
-    resp0 = requests.post(marvel_api_url, data=query_string__get_screens(project_id),
-                          headers={"Authorization": "Bearer " + marvel_token})
+    resp0 = requests.post(marvel_api_url, data=query_string__get_screens(card.project_id),
+                          headers={"Authorization": "Bearer " + card.marvel_token})
     screen_edges = resp0.json()['data']['project']['screens']['edges']
 
     for screen_edge in screen_edges:
         screen_pk = str(screen_edge['node']['pk'])
 
-        if screen_pk in comment_cursors.keys():
+        if screen_pk in card.comment_cursors.keys():
             # get comments after cursor
             resp = requests.post(marvel_api_url,
-                                  data=query_string__get_comments_after_cursor(project_id, comment_cursors[screen_pk], 50),
-                                  headers={"Authorization": "Bearer " + marvel_token})
+                                  data=query_string__get_comments_after_cursor(card.project_id, card.comment_cursors[screen_pk], 50),
+                                  headers={"Authorization": "Bearer " + card.marvel_token})
         else:
             # set comment_cursors[screen_pk] to the last cursor (initialize cursor for this screen)
-            resp = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(project_id, "", 1),
-                                 headers={"Authorization": "Bearer " + marvel_token})
+            resp = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(card.project_id, "", 1),
+                                 headers={"Authorization": "Bearer " + card.marvel_token})
 
         for screen_edge in resp.json()['data']['project']['screens']['edges']:
             screen = screen_edge['node']
             if str(screen['pk']) == screen_pk:
                 if len(screen['comments']['edges']) > 0:
-                    if screen_pk in comment_cursors.keys():
+                    if screen_pk in card.comment_cursors.keys():
                         # if comment_cursors for this screen already exists, then we have new comments
                         # do sth with the new comments:
                         new_comments = screen['comments']['edges']
                         screen_name = screen['displayName']
-                        screen_url = get_screen_url(project_id, screen['uploadUrl'])+"comments/"
-                    comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
+                        screen_url = get_screen_url(card.project_id, screen['uploadUrl'])+"comments/"
+                        card.comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
                 break
 
     return (new_comments, screen_name, screen_url)
