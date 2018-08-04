@@ -76,6 +76,7 @@ def query_string__get_screens(pk):
                   edges {
                     node {
                       pk
+                      displayName
                     }
                   }
                 }
@@ -202,8 +203,20 @@ def check_for_new_comments(marvel_api_url, card):
     return (new_comments, screen_name, screen_url)
 
 
-def check_for_new_screens():
+def check_for_new_screens(marvel_api_url, card):
     new_screens = None
 
+    resp1 = requests.post(marvel_api_url, data=query_string__get_screens(card.project_pk),
+                          headers={"Authorization": "Bearer " + card.marvel_token})
+    screen_edges = resp1.json()['data']['project']['screens']['edges']
+
+    if len(card.screen_list) == 0:
+        card.screen_list = screen_edges
+        return None
+
+    if card.screen_list != screen_edges:
+        print("test")
+        new_screens = [d for d in screen_edges if d not in card.screen_list]
+        card.screen_list = screen_edges
+
     return new_screens
-    #todo
