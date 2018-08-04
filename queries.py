@@ -104,8 +104,7 @@ class Screen:
 def check_user_data(marvel_api_url, marvel_token, project_id):
     resp = requests.post(marvel_api_url, data=query_string__project_last_modified(project_id),
                          headers={"Authorization": "Bearer " + marvel_token})
-    return resp.status_code == 200
-    #todo  preveri se za project_id (ker koda je 200 tudi ce je project_id napacen)
+    return (resp.status_code == 200 and resp.json()['data']['project'] != None)
 
 
 def get_screen_url(project_id, screen_upload_url):

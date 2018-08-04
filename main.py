@@ -62,6 +62,7 @@ while True:
         for comment in comment_list:
             if comment.comment is not None and comment.comment.startswith(messages.BOT_WORD):
                 print("sporocilo za bota: " + comment.comment)
+                #TODO vsakic ko se updejta preveri, ce so podatki pravilni (queries.check_user_data(...))
 
                 project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\d+", comment.comment)
                 if len(project_pk_list) == 1:
