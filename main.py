@@ -11,11 +11,7 @@ MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
 # array contains objects with chat card properties
 card_properties_dictionary = {}
 
-BOT_WORD = '/marvin'
-PROJECT_PK_WORD = 'projectPK'
-MARVEL_TOKEN_WORD = 'marvelToken'
 
-old_modifiedAt = None  # globalna spremenljivka za cekiranje na marvel strani
 # tkole bot dobi pogovore, v katerih je vkljucen
 # ce je list v celotu napolnjen, potem ponovi za naslednjih 50, drugace si prisel cez
 while True:
@@ -55,14 +51,14 @@ while True:
         curr_card.change_offset_comment(curr_card.offset_comment + len(comment_list))
 
         for comment in comment_list:
-            if comment.comment is not None and BOT_WORD in comment.comment:
+            if comment.comment is not None and messages.BOT_WORD in comment.comment:
                 print("sporocilo za bota")
 
-                project_pk_list = re.findall(r"" + PROJECT_PK_WORD + "\s+\w+", comment.comment)
+                project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\w+", comment.comment)
                 if len(project_pk_list) == 1:
                     project_pk = project_pk_list[0].split()[1]
                     curr_card.change_project_pk(project_pk)
-                marvel_token_list = re.findall(r"" + MARVEL_TOKEN_WORD + "\s+\w+", comment.comment)
+                marvel_token_list = re.findall(r"" + messages.MARVEL_TOKEN_WORD + "\s+\w+", comment.comment)
                 if len(marvel_token_list) == 1:
                     marvel_token = marvel_token_list[0].split()[1]
                     curr_card.change_marvel_token(marvel_token)
@@ -75,7 +71,8 @@ while True:
         if card_properties_dictionary[card_id].has_required_data():
             # in case of required data check if changes were made on marvel project
             modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
-                                                               card_properties_dictionary[card_id].project_pk, old_modifiedAt)
+                                                               card_properties_dictionary[card_id].project_pk,
+                                                               card_properties_dictionary[card_id].old_modifiedAt)
 
             if modified_screen is not None:
                 messages.edit_message(modified_screen.displayName, modified_screen.screen_url, card_id, helper.BOT_ID)
@@ -84,7 +81,8 @@ while True:
 
             # CHECK FOR COMMENTS UPDATE
             new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, card_properties_dictionary[card_id].marvel_token,
-                                                                                   card_properties_dictionary[card_id].project_pk)
+                                                                                   card_properties_dictionary[card_id].project_pk,
+                                                                                   card_properties_dictionary[card_id].comment_cursors)
 
             if new_comments is not None:
                 for i in new_comments:

@@ -4,6 +4,8 @@ class Card:
         self.marvel_token = marvel_token
         self.project_pk = project_pk
         self.offset_comment = offset_comment
+        self.comment_cursors = {}
+        self.old_modifiedAt = None  # globalna spremenljivka za cekiranje na marvel strani
 
     def change_marvel_token(self, marvel_token):
         self.marvel_token = marvel_token

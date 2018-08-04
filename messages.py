@@ -1,5 +1,8 @@
 import helper
 
+BOT_WORD = '/marvin'
+PROJECT_PK_WORD = 'projectPK'
+MARVEL_TOKEN_WORD = 'marvelToken'
 
 # file contains messages that are sent when new event occurs in application
 # and we want to notify a user
@@ -37,5 +40,6 @@ def create_message(screen_name, project_link, card_id, user_id):
 # sends list of bor actions
 def bot_initial_message(card_id, user_id):
     message = "I accept messages that start with /marvin.\n" \
-              "For project number type projectPK [project number] and for marvel token type marvelToken [marvel token]."
+              "For project number type" + PROJECT_PK_WORD + " [project number] and for marvel token type" + \
+              MARVEL_TOKEN_WORD + " [marvel token]."
     helper.post(message, card_id, None, user_id)
