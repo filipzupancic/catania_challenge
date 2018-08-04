@@ -34,7 +34,6 @@ while True:
         # if not we add value to dictionary
         if c_id not in card_properties_dictionary:
             card_properties_dictionary.update({c_id: Card(None, None, 0)})
-            messages.bot_initial_message(c_id, helper.BOT_ID)
             # check comments size in chat and set offset because we do not want to check messages that were send before
             # bot was added to chat
             offset = 0
@@ -43,7 +42,8 @@ while True:
                 offset += COMMENT_SIZE_FETCHING
                 comment_list += helper.get_comments_from_chat_card(c_id, offset, COMMENT_SIZE_FETCHING)
 
-                card_properties_dictionary[c_id].change_offset_comment(card_properties_dictionary[c_id].offset_comment + len(comment_list))
+            card_properties_dictionary[c_id].change_offset_comment(card_properties_dictionary[c_id].offset_comment + len(comment_list))
+            messages.bot_initial_message(c_id, helper.BOT_ID)
 
         curr_card = card_properties_dictionary[c_id]
 
@@ -63,7 +63,7 @@ while True:
             if comment.comment is not None and comment.comment.startswith(messages.BOT_WORD):
                 print("sporocilo za bota: " + comment.comment)
 
-                project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\w+", comment.comment)
+                project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\d+", comment.comment)
                 if len(project_pk_list) == 1:
                     project_pk = project_pk_list[0].split()[1]
                     curr_card.change_project_pk(project_pk)
@@ -78,6 +78,14 @@ while True:
     # has_required_data returns True value
     for card_id in card_properties_dictionary:
         if card_properties_dictionary[card_id].has_required_data():
+            new_screens = queries.check_for_new_screens(MARVEL_API_URL, card_properties_dictionary[card_id])
+
+            if new_screens is not None:
+                for i in new_screens:
+                    new_screen = i['node']
+                    print("new screen: " + new_screen['displayName'])
+                    messages.create_message(new_screen['displayName'], new_screen['uploadUrl'], card_id, helper.BOT_ID) # 'uploadUrl' je pohekan
+
             # in case of required data check if changes were made on marvel project
             modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, card_properties_dictionary[card_id])
 
