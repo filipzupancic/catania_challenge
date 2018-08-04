@@ -1,6 +1,7 @@
 import requests
 import time
 import re
+from copy import deepcopy
 
 # QUERY STRINGS start
 def query_string__project_last_modified(pk):
@@ -77,6 +78,7 @@ def query_string__get_screens(pk):
                     node {
                       pk
                       displayName
+                      uploadUrl
                     }
                   }
                 }
@@ -215,8 +217,14 @@ def check_for_new_screens(marvel_api_url, card):
         return None
 
     if card.screen_list != screen_edges:
-        print("test")
-        new_screens = [d for d in screen_edges if d not in card.screen_list]
+        new_screens = deepcopy([d for d in screen_edges if d not in card.screen_list])
+        for new_screen in new_screens:
+            new_screen['node']['uploadUrl'] = get_screen_url(card.project_pk, new_screen['node']['uploadUrl'])
+
+        last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
+        new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
+        card.change_old_modifiedAt_screen(new_modifiedAt)
+
         card.screen_list = screen_edges
 
     return new_screens
