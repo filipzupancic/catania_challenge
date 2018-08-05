@@ -11,6 +11,14 @@ CARD_SIZE_FETCHING = 100
 # array contains objects with chat card properties
 card_properties_dictionary = {}
 
+# how to send mail:
+# helper.send_mail("content eefekf", ["johny.zeplin@gmail.com"], mimeType="application/vnd.loop.text.plain.bbtag")
+
+# with open('email.html', 'r') as myfile:
+#     data=myfile.read().replace('\n', '')
+#     helper.send_mail(data, ["johny.zeplin@gmail.com"])
+
+
 
 # tkole bot dobi pogovore, v katerih je vkljucen
 # ce je list v celotu napolnjen, potem ponovi za naslednjih 50, drugace si prisel cez
