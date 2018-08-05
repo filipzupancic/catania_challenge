@@ -68,7 +68,6 @@ while True:
         for comment in comment_list:
             if comment.comment is not None and comment.comment.startswith(messages.BOT_WORD):
                 print("sporocilo za bota: " + comment.comment)
-                #TODO vsakic ko se updejta preveri, ce so podatki pravilni (queries.check_user_data(...))
 
                 project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\d+", comment.comment)
                 if len(project_pk_list) == 1:
@@ -79,7 +78,23 @@ while True:
                     marvel_token = marvel_token_list[0].split()[1]
                     curr_card.change_marvel_token(marvel_token)
 
-    #print(card_properties_dictionary)
+                if curr_card.has_required_data():
+                    data_valid = queries.check_user_data(MARVEL_API_URL, curr_card)
+                    if data_valid == 0:
+                        # user data valid
+                        print("user data valid")
+                        messages.user_data_valid_message(c_id, helper.BOT_ID)
+                    elif data_valid == 1:
+                        # request failed (probably wrong marvel token)
+                        print("request failed (probably wrong marvel token)")
+                        curr_card.marvel_token = None
+                        messages.wrong_marvel_token_message(c_id, helper.BOT_ID)
+                    elif data_valid == 2:
+                        # no project found (wrong project pk)
+                        print("no project found (wrong project pk)")
+                        curr_card.project_pk = None
+                        messages.wrong_project_number_message(c_id, helper.BOT_ID)
+
 
     # checks all records in card_properties_dictionary and send query if
     # has_required_data returns True value
