@@ -1,6 +1,7 @@
 import requests
 import time
 import re
+from copy import deepcopy
 
 # QUERY STRINGS start
 def query_string__project_last_modified(pk):
@@ -76,6 +77,8 @@ def query_string__get_screens(pk):
                   edges {
                     node {
                       pk
+                      displayName
+                      uploadUrl
                     }
                   }
                 }
@@ -101,8 +104,7 @@ class Screen:
 def check_user_data(marvel_api_url, marvel_token, project_id):
     resp = requests.post(marvel_api_url, data=query_string__project_last_modified(project_id),
                          headers={"Authorization": "Bearer " + marvel_token})
-    return resp.status_code == 200
-    #todo  preveri se za project_id (ker koda je 200 tudi ce je project_id napacen)
+    return (resp.status_code == 200 and resp.json()['data']['project'] != None)
 
 
 def get_screen_url(project_id, screen_upload_url):
@@ -127,44 +129,21 @@ def get_last_modified_screen(marvel_api_url, marvel_token, project_id):
 #  - None if no screen is changed, or
 #  - last modified screen as 'Screen' object if a screen was modified after the 'old_modifiedAt'
 def check_if_screen_modified(marvel_api_url, card):
-    if card.old_modifiedAt is None:
+    if card.old_modifiedAt_screen is None:
         # initialize old_modifiedAt
-        last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_id)
-        card.change_old_modifiedAt(time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00")))
+        last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
+        card.change_old_modifiedAt_screen(time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00")))
         return None
 
-    last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_id)
+    last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
     new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
     modified_screen = None
 
-    if new_modifiedAt != card.old_modifiedAt:
-        modified_screen = Screen(last_modified_screen, card.project_id)
-        card.change_old_modifiedAt(modified_screen.modifiedAt_time)
+    if new_modifiedAt != card.old_modifiedAt_screen:
+        modified_screen = Screen(last_modified_screen, card.project_pk)
+        card.change_old_modifiedAt_screen(modified_screen.modifiedAt_time)
 
     return modified_screen
-# DEMO CODE - not working
-'''
-import queries
-import time
-import messages
-import helper
-
-MARVEL_TOKEN = "bUfITrzmkkWMiCSgKy0NWMsu9E0imV"
-MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
-project_id = "3246216"
-
-user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
-chat = helper.get_chat(helper.USER1_MAIL, user_id)
-
-while True:
-    modified_screen = queries.check_if_screen_modified(MARVEL_API_URL, MARVEL_TOKEN, project_id)
-
-    if modified_screen is not None:
-        print(modified_screen.displayName + " was modified - time:" + modified_screen.modifiedAt)
-        messages.edit_message("Somebody", modified_screen.displayName, modified_screen.screen_url, chat.id, user_id)
-
-    time.sleep(1)
-'''
 
 # this function returns
 #  - None if there is no new comments, or
@@ -177,9 +156,18 @@ def check_for_new_comments(marvel_api_url, card):
     screen_name = None
     screen_url = None
 
-    resp0 = requests.post(marvel_api_url, data=query_string__get_screens(card.project_id),
+    resp0 = requests.post(marvel_api_url, data=query_string__project_last_modified(card.project_pk),
                           headers={"Authorization": "Bearer " + card.marvel_token})
-    screen_edges = resp0.json()['data']['project']['screens']['edges']
+    new_modifiedAt = time.mktime(time.strptime(resp0.json()['data']['project']['modifiedAt'][0:19], "%Y-%m-%dT%H:%M:%S"))
+
+    if (card.old_modifiedAt_project == new_modifiedAt):
+        return (new_comments, screen_name, screen_url)
+
+    card.old_modifiedAt_project = new_modifiedAt
+
+    resp1 = requests.post(marvel_api_url, data=query_string__get_screens(card.project_pk),
+                          headers={"Authorization": "Bearer " + card.marvel_token})
+    screen_edges = resp1.json()['data']['project']['screens']['edges']
 
     for screen_edge in screen_edges:
         screen_pk = str(screen_edge['node']['pk'])
@@ -187,60 +175,55 @@ def check_for_new_comments(marvel_api_url, card):
         if screen_pk in card.comment_cursors.keys():
             # get comments after cursor
             resp = requests.post(marvel_api_url,
-                                  data=query_string__get_comments_after_cursor(card.project_id, card.comment_cursors[screen_pk], 50),
+                                  data=query_string__get_comments_after_cursor(card.project_pk, card.comment_cursors[screen_pk], 50),
                                   headers={"Authorization": "Bearer " + card.marvel_token})
-        else:
-            # set comment_cursors[screen_pk] to the last cursor (initialize cursor for this screen)
-            resp = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(card.project_id, "", 1),
-                                 headers={"Authorization": "Bearer " + card.marvel_token})
 
-        for screen_edge in resp.json()['data']['project']['screens']['edges']:
-            screen = screen_edge['node']
-            if str(screen['pk']) == screen_pk:
-                if len(screen['comments']['edges']) > 0:
-                    if screen_pk in card.comment_cursors.keys():
-                        # if comment_cursors for this screen already exists, then we have new comments
-                        # do sth with the new comments:
-                        new_comments = screen['comments']['edges']
-                        screen_name = screen['displayName']
-                        screen_url = get_screen_url(card.project_id, screen['uploadUrl'])+"comments/"
-                        card.comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
-                break
+            for screen_edge2 in resp.json()['data']['project']['screens']['edges']:
+                screen = screen_edge2['node']
+                if str(screen['pk']) == screen_pk:
+                    if len(screen['comments']['edges']) > 0:
+                        if screen_pk in card.comment_cursors.keys():
+                            # if comment_cursors for this screen already exists, then we have new comments
+                            # do sth with the new comments:
+                            new_comments = screen['comments']['edges']
+                            screen_name = screen['displayName']
+                            screen_url = get_screen_url(card.project_pk, screen['uploadUrl'])+"comments/"
+                    break
+
+    # get last cursors
+    resp2 = requests.post(marvel_api_url, data=query_string__get_comments_after_cursor(card.project_pk, "", 1),
+                          headers={"Authorization": "Bearer " + card.marvel_token})
+    screen_edges = resp2.json()['data']['project']['screens']['edges']
+    
+    for screen_edge in screen_edges:
+        screen_pk = str(screen_edge['node']['pk'])
+        screen = screen_edge['node']
+        if len(screen['comments']['edges']) > 0:
+            card.comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
 
     return (new_comments, screen_name, screen_url)
-# DEMO CODE - not working
-'''
-import queries
-import time
-import messages
-import helper
-
-MARVEL_TOKEN = "bUfITrzmkkWMiCSgKy0NWMsu9E0imV"
-MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
-project_id = "3246216"
-
-user_id = helper.get_user_id_by_email(helper.USER1_MAIL)
-chat = helper.get_chat(helper.USER1_MAIL, user_id)
-
-last_modified_screen = queries.get_last_modified_screen(MARVEL_API_URL, MARVEL_TOKEN, project_id)
-old_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
-
-while True:
-    new_comments, screen_name, screen_url = queries.check_for_new_comments(MARVEL_API_URL, MARVEL_TOKEN, project_id)
-
-    if new_comments is not None:
-        for i in new_comments:
-            new_comment = i['node']
-            print(new_comment['author']['username'] + "  commented :" + new_comment['message'])
-            messages.comment_message(new_comment['author']['username'], screen_name,
-                                     screen_url, new_comment['message'], chat.id, user_id)
-
-    time.sleep(1)
-'''
 
 
-def check_for_new_screens():
+def check_for_new_screens(marvel_api_url, card):
     new_screens = None
 
+    resp1 = requests.post(marvel_api_url, data=query_string__get_screens(card.project_pk),
+                          headers={"Authorization": "Bearer " + card.marvel_token})
+    screen_edges = resp1.json()['data']['project']['screens']['edges']
+
+    if len(card.screen_list) == 0:
+        card.screen_list = screen_edges
+        return None
+
+    if card.screen_list != screen_edges:
+        new_screens = deepcopy([d for d in screen_edges if d not in card.screen_list])
+        for new_screen in new_screens:
+            new_screen['node']['uploadUrl'] = get_screen_url(card.project_pk, new_screen['node']['uploadUrl'])
+
+        last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
+        new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
+        card.change_old_modifiedAt_screen(new_modifiedAt)
+
+        card.screen_list = screen_edges
+
     return new_screens
-    #todo
