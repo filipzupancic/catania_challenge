@@ -71,3 +71,9 @@ def wrong_project_number_message(card_id, user_id):
               "Please update the project number by " + PROJECT_PK_WORD + " [project number]."
     helper.post(message, card_id, None, user_id)
     return
+
+def wrong_data_message(card_id, user_id):
+    message = "I do not have all data required to process this operation.\n " \
+              "Please tell me project number and marvel token."
+    helper.post(message, card_id, None, user_id)
+    return

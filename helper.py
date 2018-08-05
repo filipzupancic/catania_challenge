@@ -163,7 +163,7 @@ def refresh_token():
 
 
 # helper za poslijanje mailov, naredi post
-def send_mail_to_group(content, to_mail_list, mimeType="application/html"): # type=html or text
+def send_mail_to_group(subject, content, to_mail_list, mimeType="application/html"): # type=html or text
     if mimeType == "application/html":
         content = json.dumps(content)
     else:
@@ -192,7 +192,7 @@ def send_mail_to_group(content, to_mail_list, mimeType="application/html"): # ty
                     "$type": "User",
                     "email": \"""" + BOT_MAIL + """\"
                 },
-                "name": "title"
+                "name": \"""" + subject + """\"
             }
 """
     # TODO change hardcoded url \
