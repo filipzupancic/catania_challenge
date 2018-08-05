@@ -3,7 +3,7 @@ from card import Card
 import messages
 import queries
 import re
-from loop_sdk_client.models import Group
+from loop_sdk_client.models import Group, User
 import random
 
 MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
@@ -130,7 +130,15 @@ while True:
                         for resource in loop_card.share_list.resources:
                             if type(resource) is Group:
                                 mail_to_list.append(resource.id)
-                        helper.send_mail_to_group(STATUS_MAIL_SUBJECT, data, mail_to_list)
+                        # if direct message, there is no group so mail_to_list will be empty
+                        if not mail_to_list:
+                            for resource in loop_card.share_list.resources:
+                                if type(resource) is User:
+                                    mail_to_list.append(resource.email)
+                            helper.send_mail("User", c_id, STATUS_MAIL_SUBJECT, data, mail_to_list)
+                        else:
+                            #send to group
+                            helper.send_mail("Group", c_id, STATUS_MAIL_SUBJECT, data, mail_to_list)
 
                 elif messages.MAIL_UPDATE_WORD in comment.comment and not curr_card.has_required_data():
                     invalid_operation = False

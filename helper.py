@@ -161,9 +161,24 @@ def refresh_token():
     token = new_data
 
 
+# za author dodaj:
+# "parent": {
+#     "$type": "CardBase",
+#     "id": \"""" + parent_card_id + """\"
+# },
+
 
 # helper za poslijanje mailov, naredi post
-def send_mail_to_group(subject, content, to_mail_list, mimeType="application/html"): # type=html or text
+def send_mail(type_keyword, parent_card_id, subject, content, to_mail_list, mimeType="application/html"): # type=html or text
+    # type_keyword should be User or Group
+    if type_keyword == "User":
+        type_data = "email"
+    elif type_keyword == "Group":
+        type_data = "id"
+    else:
+        print("Invalid type_keyword")
+        type_data = None
+
     if mimeType == "application/html":
         content = json.dumps(content)
     else:
@@ -172,8 +187,8 @@ def send_mail_to_group(subject, content, to_mail_list, mimeType="application/htm
     resources = '"resources": ['
     for to_mail in to_mail_list:
         resources += """{
-                            "$type": "Group",
-                            "id": \"""" + to_mail + """\"
+                            "$type": \"""" + type_keyword + """\",  
+                            \"""" + type_data + """\": \"""" + to_mail + """\"
                          },"""
     # close resources
     resources += """]"""
@@ -192,6 +207,7 @@ def send_mail_to_group(subject, content, to_mail_list, mimeType="application/htm
                     "$type": "User",
                     "email": \"""" + BOT_MAIL + """\"
                 },
+
                 "name": \"""" + subject + """\"
             }
 """
@@ -200,5 +216,3 @@ def send_mail_to_group(subject, content, to_mail_list, mimeType="application/htm
                          headers={"Authorization": get_auth(), "X-Impersonate-User": BOT_ID, "Accept": "application/json",
                                   "Content-Type": "application/json"})
     return resp.status_code
-
-
