@@ -37,7 +37,7 @@ def create_message(screen_name, project_link, card_id, user_id):
     helper.post(message, card_id, None, user_id)
 
 
-# sends list of bor actions
+# sends list of bot actions
 def bot_initial_message(card_id, user_id):
     upload_file_response = helper.upload_file("img/marvin.png", helper.BOT_ID)
     helper.post("", card_id, upload_file_response.id, user_id)
@@ -45,3 +45,21 @@ def bot_initial_message(card_id, user_id):
               "For project number type" + PROJECT_PK_WORD + " [project number] and for marvel token type" + \
               MARVEL_TOKEN_WORD + " [marvel token]."
     helper.post(message, card_id, None, user_id)
+
+# sends user data valid message
+def user_data_valid_message(card_id, user_id):
+    message = "[user_data_valid_message placeholder]"
+    helper.post(message, card_id, None, user_id)
+    return
+
+# sends wrong Marvel token message
+def wrong_marvel_token_message(card_id, user_id):
+    message = "[wrong_marvel_token_message placeholder]"
+    helper.post(message, card_id, None, user_id)
+    return
+
+# sends wrong project number message
+def wrong_project_number_message(card_id, user_id):
+    message = "[wrong_project_number_message placeholder]"
+    helper.post(message, card_id, None, user_id)
+    return
