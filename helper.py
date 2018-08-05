@@ -1,6 +1,8 @@
 #import loop_sdk_client as loop_api
 #from loop_sdk_client import api_client
 #from loop_sdk_client import configuration as config
+import requests
+import json
 
 import loop_sdk_client as loop_api
 # from loop_sdk_client.rest import ApiException
@@ -151,3 +153,44 @@ def refresh_token():
     new_data = token_api.token_refresh_token(token, authorization=get_auth())
     assert isinstance(new_data, loop_api.Token)
     token = new_data
+
+
+
+# helper za poslijanje mailov, naredi post
+def send_mail(content, to_mail_list, mimeType="application/html"): # type=html or text
+    if mimeType == "application/html":
+        result = json.dumps(content)
+
+    resources = '"resources": ['
+    for to_mail in to_mail_list:
+        resources += """{
+                            "$type": "User",
+                            "email": \"""" + to_mail + """\"
+                         },"""
+    # close resources
+    resources += """]"""
+
+    data = """{
+                "$type": "CommentMail",
+                "to": {
+                    """ + resources + """
+                },
+                "body": {
+                    "$type": "CommentBody",
+                    "mimeType": \"""" + mimeType + """\",
+                    "content": \"""" + content + """\"
+                },
+                "author": {
+                    "$type": "User",
+                    "email": \"""" + BOT_MAIL + """\"
+                },
+                "name": "title"
+            }
+"""
+    # TODO change hardcoded url \
+    resp = requests.post("https://clean-sprint-app.intheloop.io/api/v1/comment/mail", data=data,
+                         headers={"Authorization": get_auth(), "X-Impersonate-User": BOT_ID, "Accept": "application/json",
+                                  "Content-Type": "application/json"})
+    print(resp.status_code)
+
+
