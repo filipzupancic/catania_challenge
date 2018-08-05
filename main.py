@@ -3,6 +3,7 @@ from card import Card
 import messages
 import queries
 import re
+from loop_sdk_client.models import Group
 
 MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
 COMMENT_SIZE_FETCHING = 100
@@ -79,6 +80,17 @@ while True:
                 if len(marvel_token_list) == 1:
                     marvel_token = marvel_token_list[0].split()[1]
                     curr_card.change_marvel_token(marvel_token)
+                # check if user wants updates on mail
+                if messages.MAIL_UPDATE_WORD in comment.comment:
+                    with open('email.html', 'r') as html_file:
+                        data = html_file.read().replace('\n', '')
+                        # kako dobiti mejle od ljudi ki so v pogovoru (cardu)
+                        loop_card = helper.get_card_by_id(c_id)
+                        mail_to_list = []
+                        for resource in loop_card.share_list.resources:
+                            if type(resource) is Group:
+                                mail_to_list.append(resource.id)
+                        helper.send_mail_to_group(data, mail_to_list)
 
                 if curr_card.has_required_data():
                     data_valid = queries.check_user_data(MARVEL_API_URL, curr_card)

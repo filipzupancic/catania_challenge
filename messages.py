@@ -3,6 +3,7 @@ import helper
 BOT_WORD = '/marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
+MAIL_UPDATE_WORD = ' hitMe'
 
 # file contains messages that are sent when new event occurs in application
 # and we want to notify a user

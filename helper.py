@@ -53,6 +53,12 @@ def get_chat(email, x_impersonate_user):
     return result
 
 
+def get_card_by_id(id):
+    api = loop_api.CardApi()
+    card = api.card_get(id, authorization=get_auth(), x_impersonate_user=BOT_ID)
+    return card
+
+
 def get_chat_by_emails(email1, email2, x_impersonate_user):
     api = loop_api.CardApi()
     user1 = loop_api.User(email=email1, type="User")
@@ -157,7 +163,7 @@ def refresh_token():
 
 
 # helper za poslijanje mailov, naredi post
-def send_mail(content, to_mail_list, mimeType="application/html"): # type=html or text
+def send_mail_to_group(content, to_mail_list, mimeType="application/html"): # type=html or text
     if mimeType == "application/html":
         content = json.dumps(content)
     else:
@@ -166,8 +172,8 @@ def send_mail(content, to_mail_list, mimeType="application/html"): # type=html o
     resources = '"resources": ['
     for to_mail in to_mail_list:
         resources += """{
-                            "$type": "User",
-                            "email": \"""" + to_mail + """\"
+                            "$type": "Group",
+                            "id": \"""" + to_mail + """\"
                          },"""
     # close resources
     resources += """]"""
@@ -193,6 +199,6 @@ def send_mail(content, to_mail_list, mimeType="application/html"): # type=html o
     resp = requests.post("https://clean-sprint-app.intheloop.io/api/v1/comment/mail", data=data,
                          headers={"Authorization": get_auth(), "X-Impersonate-User": BOT_ID, "Accept": "application/json",
                                   "Content-Type": "application/json"})
-    print(resp.status_code)
+    return resp.status_code
 
 
