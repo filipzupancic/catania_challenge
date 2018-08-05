@@ -3,10 +3,12 @@ from card import Card
 import messages
 import queries
 import re
+from loop_sdk_client.models import Group
 
 MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
 COMMENT_SIZE_FETCHING = 100
 CARD_SIZE_FETCHING = 100
+STATUS_MAIL_SUBJECT = "Marvin has your back"
 
 # array contains objects with chat card properties
 card_properties_dictionary = {}
@@ -71,22 +73,22 @@ while True:
             if comment.comment is not None and comment.comment.startswith(messages.BOT_WORD):
                 print("sporocilo za bota: " + comment.comment)
 
+
+                information_changed = False
                 project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\d+", comment.comment)
                 if len(project_pk_list) == 1:
                     project_pk = project_pk_list[0].split()[1]
                     curr_card.change_project_pk(project_pk)
+                    information_changed = True
                 marvel_token_list = re.findall(r"" + messages.MARVEL_TOKEN_WORD + "\s+\w+", comment.comment)
                 if len(marvel_token_list) == 1:
                     marvel_token = marvel_token_list[0].split()[1]
                     curr_card.change_marvel_token(marvel_token)
+                    information_changed = True
 
-                if curr_card.has_required_data():
+                if curr_card.has_required_data() and information_changed:
                     data_valid = queries.check_user_data(MARVEL_API_URL, curr_card)
-                    if data_valid == 0:
-                        # user data valid
-                        print("user data valid")
-                        messages.user_data_valid_message(c_id, helper.BOT_ID)
-                    elif data_valid == 1:
+                    if data_valid == 1:
                         # request failed (probably wrong marvel token)
                         print("request failed (probably wrong marvel token)")
                         curr_card.marvel_token = None
@@ -96,7 +98,27 @@ while True:
                         print("no project found (wrong project pk)")
                         curr_card.project_pk = None
                         messages.wrong_project_number_message(c_id, helper.BOT_ID)
+                    elif data_valid == 0:
+                        # user data valid
+                        print("user data valid")
+                        messages.user_data_valid_message(c_id, helper.BOT_ID)
+                    else:
+                        print("Something went wrong with checking for valid information in chat.")
 
+                # check if user wants updates on mail
+                if messages.MAIL_UPDATE_WORD in comment.comment and curr_card.has_required_data():
+                    with open('email.html', 'r') as html_file:
+                        data = html_file.read().replace('\n', '')
+                        # kako dobiti mejle od ljudi ki so v pogovoru (cardu)
+                        loop_card = helper.get_card_by_id(c_id)
+                        mail_to_list = []
+                        for resource in loop_card.share_list.resources:
+                            if type(resource) is Group:
+                                mail_to_list.append(resource.id)
+                        helper.send_mail_to_group(STATUS_MAIL_SUBJECT, data, mail_to_list)
+
+                elif messages.MAIL_UPDATE_WORD in comment.comment and not curr_card.has_required_data():
+                    messages.wrong_data_message(c_id, helper.BOT_ID)
 
     # checks all records in card_properties_dictionary and send query if
     # has_required_data returns True value

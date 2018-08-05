@@ -3,6 +3,7 @@ import helper
 BOT_WORD = '/marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
+MAIL_UPDATE_WORD = ' hitMe'
 MARVIN_PIC_ID = 'TF_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNTQzIiwiZmlsZV9kYXRhX2luZm8iOiJHRE56QjhiZTllOTJyLVNDUVUtNkFmbUktaVlmdnF1V0k0SkUyYktIY0pZLjE4Y0Y7bWFydmluLnBuZzsxODsxODhlOzFkNDJjYTY1NGYyYjkwMjt2IiwibmJmIjoxNTMzNDY0NjAwLCJleHAiOjE1MzM0NjgyMDAsImlhdCI6MTUzMzQ2NDYwMH0.ZPhvYkhH-yhbLoftRpPA1Nb829LoyLLroUxS0RFpCUY'
 
 EMOTICON_ROBOT = "\uD83E\uDD16"
@@ -76,5 +77,11 @@ def wrong_marvel_token_message(card_id, user_id):
 def wrong_project_number_message(card_id, user_id):
     message = "I cannot find the project.\n" \
               "Please update the project number by " + PROJECT_PK_WORD + " [project number]."
+    helper.post(message, card_id, None, user_id)
+    return
+
+def wrong_data_message(card_id, user_id):
+    message = "I do not have all data required to process this operation.\n " \
+              "Please tell me project number and marvel token."
     helper.post(message, card_id, None, user_id)
     return
