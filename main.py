@@ -14,7 +14,9 @@ card_properties_dictionary = {}
 # how to send mail:
 # helper.send_mail("content eefekf", ["johny.zeplin@gmail.com"], mimeType="application/vnd.loop.text.plain.bbtag")
 
-
+# with open('email.html', 'r') as myfile:
+#     data=myfile.read().replace('\n', '')
+#     helper.send_mail(data, ["johny.zeplin@gmail.com"])
 
 
 

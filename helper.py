@@ -159,7 +159,9 @@ def refresh_token():
 # helper za poslijanje mailov, naredi post
 def send_mail(content, to_mail_list, mimeType="application/html"): # type=html or text
     if mimeType == "application/html":
-        result = json.dumps(content)
+        content = json.dumps(content)
+    else:
+        content = '"' + content + '"'
 
     resources = '"resources": ['
     for to_mail in to_mail_list:
@@ -178,7 +180,7 @@ def send_mail(content, to_mail_list, mimeType="application/html"): # type=html o
                 "body": {
                     "$type": "CommentBody",
                     "mimeType": \"""" + mimeType + """\",
-                    "content": \"""" + content + """\"
+                    "content": """ + content + """
                 },
                 "author": {
                     "$type": "User",
