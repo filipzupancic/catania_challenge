@@ -3,7 +3,9 @@ import helper
 BOT_WORD = '/marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
-MAIL_UPDATE_WORD = ' hitMe'
+MAIL_UPDATE_WORD = 'hitMe'
+HELP_WORD = "help"  # used as text (if you need /help ..)
+JOKE_WORD = "joke"
 MARVIN_PIC_ID = 'TF_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNTQzIiwiZmlsZV9kYXRhX2luZm8iOiJHRE56QjhiZTllOTJyLVNDUVUtNkFmbUktaVlmdnF1V0k0SkUyYktIY0pZLjE4Y0Y7bWFydmluLnBuZzsxODsxODhlOzFkNDJjYTY1NGYyYjkwMjt2IiwibmJmIjoxNTMzNDY0NjAwLCJleHAiOjE1MzM0NjgyMDAsImlhdCI6MTUzMzQ2NDYwMH0.ZPhvYkhH-yhbLoftRpPA1Nb829LoyLLroUxS0RFpCUY'
 
 # file contains messages that are sent when new event occurs in application
@@ -47,7 +49,9 @@ def bot_initial_message(card_id, user_id):
     message = "I accept messages that start with /marvin.\n" \
               "To send you updates I need project number and Marvel token.\n" \
               "For project number type " + PROJECT_PK_WORD + " [project number]\nand for Marvel token type " + \
-              MARVEL_TOKEN_WORD + " [marvel token]."
+              MARVEL_TOKEN_WORD + " [marvel token].\n" \
+              "If you need " + HELP_WORD + " just ask me.\n" \
+              "If you need a " + JOKE_WORD + " I can tell you one."
     helper.post(message, card_id, None, user_id)
 
 # sends user data valid message
@@ -77,3 +81,11 @@ def wrong_data_message(card_id, user_id):
               "Please tell me project number and marvel token."
     helper.post(message, card_id, None, user_id)
     return
+
+def send_message_to_chat_card(message, card_id, user_id):
+    helper.post(message, card_id, None, user_id)
+    return
+
+def invalid_command_message(card_id, user_id):
+    message = "Invalid command was used. For valid commands use " + HELP_WORD + "."
+    send_message_to_chat_card(message, card_id, user_id)

@@ -4,11 +4,23 @@ import messages
 import queries
 import re
 from loop_sdk_client.models import Group
+import random
 
 MARVEL_API_URL = "https://api.marvelapp.com/graphql/"
 COMMENT_SIZE_FETCHING = 100
 CARD_SIZE_FETCHING = 100
 STATUS_MAIL_SUBJECT = "Marvin has your back"
+JOKES = ["How does a computer get drunk? It takes screenshots.",
+         "I just got fired from my job at the keyboard factory. They told me I wasn't putting in enough shifts.",
+         "Why did the programmer quit his job? Because he didn't get arrays.",
+         "Some people say the glass is half full. Some people say the glass is half empty. Engineers say the glass is twice as big as necessary.",
+         "Team work is important; it helps to put the blame on someone else.",
+         "I get plenty of exercise – jumping to conclusions, pushing my luck, and dodging deadlines.",
+         "How do construction workers party? They raise the roof.",
+         "The only thing worse than seeing something done wrong is seeing it done slowly.",
+         "I have a lot of jokes about unemployed people but none of them work.",
+         "No jokes for you, go to work."
+         ]
 
 # array contains objects with chat card properties
 card_properties_dictionary = {}
@@ -71,8 +83,8 @@ while True:
 
         for comment in comment_list:
             if comment.comment is not None and comment.comment.startswith(messages.BOT_WORD):
+                invalid_operation = True
                 print("sporocilo za bota: " + comment.comment)
-
 
                 information_changed = False
                 project_pk_list = re.findall(r"" + messages.PROJECT_PK_WORD + "\s+\d+", comment.comment)
@@ -80,11 +92,13 @@ while True:
                     project_pk = project_pk_list[0].split()[1]
                     curr_card.change_project_pk(project_pk)
                     information_changed = True
+                    invalid_operation = False
                 marvel_token_list = re.findall(r"" + messages.MARVEL_TOKEN_WORD + "\s+\w+", comment.comment)
                 if len(marvel_token_list) == 1:
                     marvel_token = marvel_token_list[0].split()[1]
                     curr_card.change_marvel_token(marvel_token)
                     information_changed = True
+                    invalid_operation = False
 
                 if curr_card.has_required_data() and information_changed:
                     data_valid = queries.check_user_data(MARVEL_API_URL, curr_card)
@@ -107,9 +121,9 @@ while True:
 
                 # check if user wants updates on mail
                 if messages.MAIL_UPDATE_WORD in comment.comment and curr_card.has_required_data():
+                    invalid_operation = False
                     with open('email.html', 'r') as html_file:
                         data = html_file.read().replace('\n', '')
-                        # kako dobiti mejle od ljudi ki so v pogovoru (cardu)
                         loop_card = helper.get_card_by_id(c_id)
                         mail_to_list = []
                         for resource in loop_card.share_list.resources:
@@ -118,7 +132,26 @@ while True:
                         helper.send_mail_to_group(STATUS_MAIL_SUBJECT, data, mail_to_list)
 
                 elif messages.MAIL_UPDATE_WORD in comment.comment and not curr_card.has_required_data():
+                    invalid_operation = False
                     messages.wrong_data_message(c_id, helper.BOT_ID)
+
+                # check if user wants to chat with marvin
+                if messages.JOKE_WORD in comment.comment:
+                    invalid_operation = False
+                    selected_joke = random.choice(JOKES)
+                    messages.send_message_to_chat_card(selected_joke, c_id, helper.BOT_ID)
+
+                if messages.HELP_WORD in comment.comment:
+                    invalid_operation = False
+                    messages.bot_initial_message(c_id, helper.BOT_ID)
+
+                # check if user entered invalid command
+                if invalid_operation:
+                    messages.invalid_command_message(c_id, helper.BOT_ID)
+
+            else:
+                # message was not intended for marvin
+                pass
 
     # checks all records in card_properties_dictionary and send query if
     # has_required_data returns True value
