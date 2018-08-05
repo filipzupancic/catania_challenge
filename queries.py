@@ -101,10 +101,18 @@ class Screen:
 # CLASSES end
 
 # VALIDATING USER DATA
-def check_user_data(marvel_api_url, marvel_token, project_id):
-    resp = requests.post(marvel_api_url, data=query_string__project_last_modified(project_id),
-                         headers={"Authorization": "Bearer " + marvel_token})
-    return (resp.status_code == 200 and resp.json()['data']['project'] != None)
+# returns {int}:
+#    0 - data valid
+#    1 - request failed (probably wrong marvel token)
+#    2 - no project found (wrong project pk)
+def check_user_data(marvel_api_url, card):
+    resp = requests.post(marvel_api_url, data=query_string__project_last_modified(card.project_pk),
+                         headers={"Authorization": "Bearer " + card.marvel_token})
+    if (resp.status_code != 200):
+        return 1
+    if (resp.json()['data']['project'] == None):
+        return 2
+    return 0
 
 
 def get_screen_url(project_id, screen_upload_url):
