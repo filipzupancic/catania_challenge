@@ -39,6 +39,8 @@ def create_message(screen_name, project_link, card_id, user_id):
 
 # sends list of bor actions
 def bot_initial_message(card_id, user_id):
+    upload_file_response = helper.upload_file("C:/Users/filipzupancic/CATANIA_CHALLENGE/catania_challenge/img/marvin.png", helper.BOT_ID)
+    helper.post("", card_id, upload_file_response.id, user_id)
     message = "I accept messages that start with /marvin.\n" \
               "For project number type" + PROJECT_PK_WORD + " [project number] and for marvel token type" + \
               MARVEL_TOKEN_WORD + " [marvel token]."
