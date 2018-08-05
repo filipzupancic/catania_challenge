@@ -19,7 +19,8 @@ JOKES = ["How does a computer get drunk? It takes screenshots.",
          "How do construction workers party? They raise the roof.",
          "The only thing worse than seeing something done wrong is seeing it done slowly.",
          "I have a lot of jokes about unemployed people but none of them work.",
-         "No jokes for you, go to work."
+         "No jokes for you, go to work.",
+         "I would love to change the world, but they won't give me the source code."
          ]
 
 # array contains objects with chat card properties
