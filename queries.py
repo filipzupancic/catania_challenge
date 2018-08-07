@@ -221,11 +221,11 @@ def check_for_new_screens(marvel_api_url, card):
                           headers={"Authorization": "Bearer " + card.marvel_token})
     screen_edges = resp1.json()['data']['project']['screens']['edges']
 
-    if len(card.screen_list) == 0:
+    if card.screen_list is None:
         card.screen_list = screen_edges
         return None
 
-    if len(card.screen_list) != len(screen_edges) and card.screen_list != screen_edges:
+    if len(card.screen_list) < len(screen_edges) and card.screen_list != screen_edges:
         new_screens = deepcopy([d for d in screen_edges if d not in card.screen_list])
         for new_screen in new_screens:
             new_screen['node']['uploadUrl'] = get_screen_url(card.project_pk, new_screen['node']['uploadUrl'])

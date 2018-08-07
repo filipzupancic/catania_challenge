@@ -7,7 +7,7 @@ class Card:
         self.comment_cursors = {}
         self.old_modifiedAt_project = 0  # globalna spremenljivka za cekiranje na marvel strani
         self.old_modifiedAt_screen = None  # globalna spremenljivka za cekiranje na marvel strani
-        self.screen_list = []
+        self.screen_list = None
 
     def change_marvel_token(self, marvel_token):
         self.marvel_token = marvel_token
