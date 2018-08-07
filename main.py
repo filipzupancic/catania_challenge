@@ -131,23 +131,23 @@ while True:
                             if type(resource) is Group:
                                 mail_to_list.append(resource.id)
                         # if direct message, there is no group so mail_to_list will be empty
-                        # if not mail_to_list:
-                        #     for resource in loop_card.share_list.resources:
-                        #         if type(resource) is User:
-                        #             mail_to_list.append(resource.email)
-                        #     status_code = helper.send_mail("User", c_id, STATUS_MAIL_SUBJECT, data, mail_to_list)
-                        #     if status_code == 201:
-                        #         messages.send_message_to_chat_card("Done, check your inbox.", c_id, helper.BOT_ID)
-                        #     else:
-                        #         messages.send_message_to_chat_card("Ooops, something went wrong.", c_id, helper.BOT_ID)
-                        #
-                        # else:
-                            #send to group
-                        status_code = helper.send_mail("Group", c_id, STATUS_MAIL_SUBJECT, data, mail_to_list)
-                        if status_code == 201:
-                            messages.send_message_to_chat_card("Done, check your inbox.", c_id, helper.BOT_ID)
+                        if not mail_to_list:
+                            for resource in loop_card.share_list.resources:
+                                if type(resource) is User:
+                                    mail_to_list.append(resource.email)
+                            status_code = helper.send_mail("User", c_id, STATUS_MAIL_SUBJECT, data, mail_to_list)
+                            if status_code == 201:
+                                messages.send_message_to_chat_card("Done, check your inbox.", c_id, helper.BOT_ID)
+                            else:
+                                messages.send_message_to_chat_card("Ooops, something went wrong.", c_id, helper.BOT_ID)
+
                         else:
-                            messages.send_message_to_chat_card("Ooops, something went wrong.", c_id, helper.BOT_ID)
+                            #send to group
+                            status_code = helper.send_mail("Group", c_id, STATUS_MAIL_SUBJECT, data, mail_to_list)
+                            if status_code == 201:
+                                messages.send_message_to_chat_card("Done, check your inbox.", c_id, helper.BOT_ID)
+                            else:
+                                messages.send_message_to_chat_card("Ooops, something went wrong.", c_id, helper.BOT_ID)
 
                 elif messages.MAIL_UPDATE_WORD in comment.comment and not curr_card.has_required_data():
                     invalid_operation = False
