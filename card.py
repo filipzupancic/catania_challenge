@@ -1,13 +1,13 @@
 class Card:
-
+    # TODO change marvel_token and projectPK, DEMO purposes only
     def __init__(self, marvel_token, project_pk, offset_comment):
-        self.marvel_token = marvel_token
-        self.project_pk = project_pk
+        self.marvel_token = 'iJXwdy0EUPrPHKdqEzvkGfnr12zGRI'  # marvel_token
+        self.project_pk = '3257590'  # project_pk
         self.offset_comment = offset_comment
         self.comment_cursors = {}
         self.old_modifiedAt_project = 0  # globalna spremenljivka za cekiranje na marvel strani
         self.old_modifiedAt_screen = None  # globalna spremenljivka za cekiranje na marvel strani
-        self.screen_list = []
+        self.screen_list = None
 
     def change_marvel_token(self, marvel_token):
         self.marvel_token = marvel_token

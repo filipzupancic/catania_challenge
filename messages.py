@@ -1,17 +1,17 @@
 import helper
 
-BOT_WORD = '/marvin'
+BOT_WORD = '@marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
-MAIL_UPDATE_WORD = 'hitMe'
-HELP_WORD = "help"  # used as text (if you need /help ..)
+MAIL_UPDATE_WORD = 'update'
+HELP_WORD = "help"  # used as text (if you need help ..)
 JOKE_WORD = "joke"
 MARVIN_PIC_ID = 'TF_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNTQzIiwiZmlsZV9kYXRhX2luZm8iOiJHRE56QjhiZTllOTJyLVNDUVUtNkFmbUktaVlmdnF1V0k0SkUyYktIY0pZLjE4Y0Y7bWFydmluLnBuZzsxODsxODhlOzFkNDJjYTY1NGYyYjkwMjt2IiwibmJmIjoxNTMzNDY0NjAwLCJleHAiOjE1MzM0NjgyMDAsImlhdCI6MTUzMzQ2NDYwMH0.ZPhvYkhH-yhbLoftRpPA1Nb829LoyLLroUxS0RFpCUY'
 
 EMOTICON_ROBOT = "\uD83E\uDD16"
 EMOTICON_COMMENT = "\uD83D\uDCAC"
 EMOTICON_EDIT = "\u270F\uFE0F"
-EMOTICON_NEW = "\uD83D\uDCCC"
+EMOTICON_NEW = "\u2795"
 EMOTICON_OK = "\uD83C\uDD97"
 
 
@@ -41,7 +41,7 @@ def comment_message(user_name, screen_name, screen_link, comment, card_id, user_
 # sends a notification that new screen was created inside the project
 def create_message(screen_name, screen_link, card_id, user_id):
     if screen_link is not None:
-        link = "Go to screen:" + screen_link
+        link = "Go to screen: " + screen_link
     else:
         link = ""
     message = EMOTICON_NEW + "  " + "New screen #" + screen_name + "# was created.\n" + link
@@ -54,10 +54,20 @@ def bot_initial_message(card_id, user_id):
     #uMARVIN_PIC_ID = pload_file_response.id
     #helper.post("", card_id, MARVIN_PIC_ID, user_id)
     helper.post("\uD83E\uDD16", card_id, None, user_id)
-    message = "I accept messages that start with /marvin.\n" \
+    message = "I accept messages that start with" + BOT_WORD + ".\n" \
               "To send you updates I need project number and Marvel token.\n" \
               "For project number type " + PROJECT_PK_WORD + " [project number]\nand for Marvel token type " + \
               MARVEL_TOKEN_WORD + " [marvel token].\n" \
+              "If you want mail with updates just type in " + MAIL_UPDATE_WORD + ".\n " \
+              "If you need " + HELP_WORD + " just ask me.\n" \
+              "If you need a " + JOKE_WORD + " I can tell you one."
+    helper.post(message, card_id, None, user_id)
+
+# TODO demo purposes only, changed on two places
+def bot_initial_message_DEMO(card_id, user_id):
+    helper.post("\uD83E\uDD16", card_id, None, user_id)
+    message = "I accept messages that start with " + BOT_WORD + ".\n" \
+              "If you want mail with updates just type in " + MAIL_UPDATE_WORD + ".\n" \
               "If you need " + HELP_WORD + " just ask me.\n" \
               "If you need a " + JOKE_WORD + " I can tell you one."
     helper.post(message, card_id, None, user_id)
