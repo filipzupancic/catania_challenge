@@ -137,13 +137,15 @@ def get_last_modified_screen(marvel_api_url, marvel_token, project_id):
 #  - None if no screen is changed, or
 #  - last modified screen as 'Screen' object if a screen was modified after the 'old_modifiedAt'
 def check_if_screen_modified(marvel_api_url, card):
+    last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
+    if last_modified_screen is None:
+        return None
+
     if card.old_modifiedAt_screen is None:
         # initialize old_modifiedAt
-        last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
         card.change_old_modifiedAt_screen(time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00")))
         return None
 
-    last_modified_screen = get_last_modified_screen(marvel_api_url, card.marvel_token, card.project_pk)
     new_modifiedAt = time.mktime(time.strptime(last_modified_screen['node']['modifiedAt'], "%Y-%m-%dT%H:%M:%S+00:00"))
     modified_screen = None
 
@@ -223,7 +225,7 @@ def check_for_new_screens(marvel_api_url, card):
         card.screen_list = screen_edges
         return None
 
-    if card.screen_list != screen_edges:
+    if len(card.screen_list) != len(screen_edges) and card.screen_list != screen_edges:
         new_screens = deepcopy([d for d in screen_edges if d not in card.screen_list])
         for new_screen in new_screens:
             new_screen['node']['uploadUrl'] = get_screen_url(card.project_pk, new_screen['node']['uploadUrl'])
