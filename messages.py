@@ -4,7 +4,7 @@ BOT_WORD = '@marvin'
 PROJECT_PK_WORD = 'projectPK'
 MARVEL_TOKEN_WORD = 'marvelToken'
 MAIL_UPDATE_WORD = 'update'
-HELP_WORD = "help"  # used as text (if you need /help ..)
+HELP_WORD = "help"  # used as text (if you need help ..)
 JOKE_WORD = "joke"
 MARVIN_PIC_ID = 'TF_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNTQzIiwiZmlsZV9kYXRhX2luZm8iOiJHRE56QjhiZTllOTJyLVNDUVUtNkFmbUktaVlmdnF1V0k0SkUyYktIY0pZLjE4Y0Y7bWFydmluLnBuZzsxODsxODhlOzFkNDJjYTY1NGYyYjkwMjt2IiwibmJmIjoxNTMzNDY0NjAwLCJleHAiOjE1MzM0NjgyMDAsImlhdCI6MTUzMzQ2NDYwMH0.ZPhvYkhH-yhbLoftRpPA1Nb829LoyLLroUxS0RFpCUY'
 
@@ -58,7 +58,16 @@ def bot_initial_message(card_id, user_id):
               "To send you updates I need project number and Marvel token.\n" \
               "For project number type " + PROJECT_PK_WORD + " [project number]\nand for Marvel token type " + \
               MARVEL_TOKEN_WORD + " [marvel token].\n" \
-              "If you want mail with updates just type in " + MAIL_UPDATE_WORD + ".\n" \ 
+              "If you want mail with updates just type in " + MAIL_UPDATE_WORD + ".\n " \
+              "If you need " + HELP_WORD + " just ask me.\n" \
+              "If you need a " + JOKE_WORD + " I can tell you one."
+    helper.post(message, card_id, None, user_id)
+
+# TODO demo purposes only, changed on two places
+def bot_initial_message_DEMO(card_id, user_id):
+    helper.post("\uD83E\uDD16", card_id, None, user_id)
+    message = "I accept messages that start with " + BOT_WORD + ".\n" \
+              "If you want mail with updates just type in " + MAIL_UPDATE_WORD + ".\n" \
               "If you need " + HELP_WORD + " just ask me.\n" \
               "If you need a " + JOKE_WORD + " I can tell you one."
     helper.post(message, card_id, None, user_id)

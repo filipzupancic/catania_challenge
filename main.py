@@ -66,7 +66,7 @@ while True:
                 comment_list += helper.get_comments_from_chat_card(c_id, offset, COMMENT_SIZE_FETCHING)
 
             card_properties_dictionary[c_id].change_offset_comment(card_properties_dictionary[c_id].offset_comment + len(comment_list))
-            messages.bot_initial_message(c_id, helper.BOT_ID)
+            messages.bot_initial_message_DEMO(c_id, helper.BOT_ID)
 
         curr_card = card_properties_dictionary[c_id]
 
@@ -161,7 +161,7 @@ while True:
 
                 if messages.HELP_WORD in comment.comment:
                     invalid_operation = False
-                    messages.bot_initial_message(c_id, helper.BOT_ID)
+                    messages.bot_initial_message_DEMO(c_id, helper.BOT_ID)
 
                 # check if user entered invalid command
                 if invalid_operation:
