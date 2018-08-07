@@ -11,7 +11,7 @@ MARVIN_PIC_ID = 'TF_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNTQ
 EMOTICON_ROBOT = "\uD83E\uDD16"
 EMOTICON_COMMENT = "\uD83D\uDCAC"
 EMOTICON_EDIT = "\u270F\uFE0F"
-EMOTICON_NEW = "\uD83D\uDCCC"
+EMOTICON_NEW = "\u2795"
 EMOTICON_OK = "\uD83C\uDD97"
 
 
@@ -41,7 +41,7 @@ def comment_message(user_name, screen_name, screen_link, comment, card_id, user_
 # sends a notification that new screen was created inside the project
 def create_message(screen_name, screen_link, card_id, user_id):
     if screen_link is not None:
-        link = "Go to screen:" + screen_link
+        link = "Go to screen: " + screen_link
     else:
         link = ""
     message = EMOTICON_NEW + "  " + "New screen #" + screen_name + "# was created.\n" + link

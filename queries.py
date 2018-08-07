@@ -210,6 +210,8 @@ def check_for_new_comments(marvel_api_url, card):
         screen = screen_edge['node']
         if len(screen['comments']['edges']) > 0:
             card.comment_cursors[screen_pk] = screen['comments']['edges'][0]['cursor']
+        else:
+            card.comment_cursors[screen_pk] = ""
 
     return (new_comments, screen_name, screen_url)
 
