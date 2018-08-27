@@ -45,11 +45,11 @@ while True:
         card_list_offset += CARD_SIZE_FETCHING
         card_id_list += helper.get_card_chat_id_list_by_user_id(card_list_offset, CARD_SIZE_FETCHING, helper.BOT_ID)
 
-    for key in card_properties_dictionary:
-        # checks if card_properties_dictionary has any cards
-        # that no longer exist and deletes them
-        if key not in card_id_list:
-            del card_properties_dictionary[key]
+    # for key in card_properties_dictionary:
+    #     # checks if card_properties_dictionary has any cards
+    #     # that no longer exist and deletes them
+    #     if key not in card_id_list:
+    #         del card_properties_dictionary[key]
 
     for c_id in card_id_list:
 
